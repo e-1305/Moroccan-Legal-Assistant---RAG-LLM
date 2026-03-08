@@ -1,0 +1,30 @@
+venv/
+.venv/
+env/
+
+# Environment files
+.env
+.env.*
+
+# Python cache / compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter / notebooks
+.ipynb_checkpoints/
+
+# OS / editor files
+.DS_Store
+.idea/
+.vscode/
+
+# Logs / local DBs / temp files
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Streamlit / app artefacts
+.streamlit/
+source_files/
