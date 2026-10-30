@@ -1,21 +1,24 @@
-import streamlit as st
 import os
-import dotenv
+import sys
 import uuid
-import pysqlite3
 
+import dotenv
+import streamlit as st
 
-# check if it's linux so it works on Streamlit Cloud
-if os.name == 'posix':
-    __import__('pysqlite3')
-    import sys
-    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+# Chroma needs a recent sqlite3. On Linux (e.g. Streamlit Cloud) swap in
+# pysqlite3-binary when it is installed; elsewhere keep the system sqlite3.
+try:
+    __import__("pysqlite3")
+    sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+except ImportError:
+    pass
 
-from langchain_openai import ChatOpenAI, AzureChatOpenAI
-from langchain.schema import HumanMessage, AIMessage
+from langchain_openai import ChatOpenAI, AzureChatOpenAI  # noqa: E402
+from langchain.schema import HumanMessage, AIMessage  # noqa: E402
 
-from rag_methods import (
-    load_doc_to_db, 
+from rag_methods import (  # noqa: E402
+    load_corpus_to_db,
+    load_doc_to_db,
     load_url_to_db,
     stream_llm_response,
     stream_llm_rag_response,
@@ -117,7 +120,15 @@ else:
             st.button("Clear Chat", on_click=lambda: st.session_state.messages.clear(), type="primary")
 
         st.header("RAG Sources:")
-            
+
+        # One-click demo: index the Moroccan legal codes shipped in ./corpus
+        st.button(
+            "📚 Load Moroccan legal codes",
+            on_click=load_corpus_to_db,
+            help="Family Code, Commercial Code, Penal Code, 2011 Constitution",
+            use_container_width=True,
+        )
+
         # File upload input for RAG with documents
         st.file_uploader(
             "📄 Upload a document", 
@@ -171,9 +182,6 @@ else:
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            message_placeholder = st.empty()
-            full_response = ""
-
             messages = [HumanMessage(content=m["content"]) if m["role"] == "user" else AIMessage(content=m["content"]) for m in st.session_state.messages]
 
             if not st.session_state.use_rag:
